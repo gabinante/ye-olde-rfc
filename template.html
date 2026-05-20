@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ title }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parchment:      #f4e4c1;
+    --parchment-lite:  #f8edd3;
+    --parchment-dark:  #e0d0a8;
+    --ink:             #2d1810;
+    --ink-light:       #4a3728;
+    --red:             #8b1a1a;
+    --red-dark:        #5c1212;
+    --gold:            #c8a951;
+    --gold-dark:       #8b6914;
+    --green:           #2d5a27;
+    --rule:            #b8a080;
+    --rule-light:      #d4c4a0;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    font-size: 17px;
+  }
+
+  body {
+    font-family: 'EB Garamond', 'Georgia', 'Times New Roman', serif;
+    color: var(--ink);
+    background-color: var(--parchment);
+    background-image:
+      /* faint horizontal fibre lines */
+      repeating-linear-gradient(
+        0deg,
+        transparent, transparent 3px,
+        rgba(139,110,78,0.025) 3px, rgba(139,110,78,0.025) 4px
+      ),
+      /* faint vertical fibre lines */
+      repeating-linear-gradient(
+        90deg,
+        transparent, transparent 5px,
+        rgba(139,110,78,0.015) 5px, rgba(139,110,78,0.015) 6px
+      ),
+      /* vignette */
+      radial-gradient(ellipse at center, transparent 50%, rgba(139,110,78,0.14) 100%),
+      /* base gradient */
+      linear-gradient(180deg, #f0deb8 0%, var(--parchment) 15%, var(--parchment) 85%, var(--parchment-dark) 100%);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Page container ── */
+  .manuscript {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 2.5em 2em 4em;
+  }
+
+  /* ── Top ornament ── */
+  .top-ornament {
+    text-align: center;
+    margin-bottom: 1em;
+    padding-top: 1em;
+  }
+
+  .medallion {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2.5px solid var(--rule);
+    background: radial-gradient(circle, var(--parchment-lite), var(--parchment-dark));
+    font-size: 1.4rem;
+    color: var(--gold-dark);
+    box-shadow: 0 0 0 1px var(--rule-light), 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 0.3em;
+  }
+
+  .vine-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    color: var(--rule);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    margin-top: 0.2em;
+  }
+
+  .vine-segment {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--rule) 20%, var(--rule) 80%, transparent);
+    max-width: 160px;
+  }
+
+  .vine-leaf {
+    color: var(--green);
+    font-size: 1.05rem;
+    margin: 0 0.6em;
+  }
+
+  .vine-gem {
+    color: var(--green);
+    font-size: 0.65rem;
+    margin: 0 0.4em;
+    vertical-align: 1px;
+  }
+
+  /* ── Incipit banner ── */
+  .incipit {
+    text-align: center;
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 0.85rem;
+    color: var(--red);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin: 1.5em 0 0.6em;
+  }
+
+  /* ── Title ── */
+  .title {
+    text-align: center;
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 2.8rem;
+    font-weight: normal;
+    color: var(--ink);
+    line-height: 1.2;
+    margin: 0.15em 0 0.5em;
+  }
+
+  /* ── Subtitle ── */
+  .subtitle {
+    text-align: left;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--ink-light);
+    line-height: 1.55;
+    margin: 0 0 1.8em;
+    padding: 0 0.5em;
+  }
+
+  .subtitle .amp {
+    font-style: italic;
+    font-size: 1.15em;
+  }
+
+  /* ── Ornamental rules ── */
+  .rule {
+    border: none;
+    margin: 0 0;
+    height: 0;
+    position: relative;
+  }
+
+  .rule::before,
+  .rule::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--rule) 15%, var(--rule) 85%, transparent);
+  }
+
+  .rule::before { margin-bottom: 2.5px; }
+  .rule::after  { margin-top: 0; }
+
+  .rule-thick::before,
+  .rule-thick::after {
+    height: 1.5px;
+  }
+
+  .rule-thick::before { margin-bottom: 3px; }
+
+  /* ── Metadata table ── */
+  .metadata {
+    display: flex;
+    justify-content: space-between;
+    margin: 1.8em 0;
+    padding: 0 0.5em;
+    gap: 1em;
+  }
+
+  .meta-item {
+    text-align: center;
+    flex: 1;
+  }
+
+  .meta-label {
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 0.78rem;
+    color: var(--red);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.35em;
+  }
+
+  .meta-value {
+    font-size: 0.9rem;
+    color: var(--ink-light);
+    line-height: 1.4;
+  }
+
+  /* ── Chapter ── */
+  .chapter {
+    margin-top: 3em;
+  }
+
+  .chapter-number {
+    text-align: center;
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 0.72rem;
+    color: var(--red);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 0.5em;
+  }
+
+  .chapter-number .florette {
+    font-size: 0.85em;
+    vertical-align: 0.5px;
+  }
+
+  .chapter-heading {
+    text-align: center;
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 1.9rem;
+    font-weight: normal;
+    color: var(--ink);
+    line-height: 1.25;
+    margin-bottom: 0.8em;
+  }
+
+  /* ── Body text ── */
+  .chapter-body p {
+    text-align: justify;
+    margin-bottom: 0.9em;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
+
+  .chapter-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* ── Drop cap ── */
+  .chapter-body p:first-of-type::first-letter {
+    float: left;
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 4.2em;
+    line-height: 0.78;
+    padding: 0.06em 0.12em 0.04em 0.08em;
+    margin-right: 0.06em;
+    margin-top: 0.04em;
+    background: var(--red-dark);
+    color: var(--gold);
+    border: 1.5px solid var(--gold-dark);
+    box-shadow:
+      inset 0 0 12px rgba(0,0,0,0.25),
+      0 2px 4px rgba(0,0,0,0.15);
+  }
+
+  /* ── Colophon ── */
+  .colophon {
+    text-align: center;
+    margin-top: 4em;
+    padding-top: 1.5em;
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 0.85rem;
+    color: var(--red);
+    letter-spacing: 0.2em;
+  }
+
+  .colophon-ornament {
+    color: var(--rule);
+    font-size: 1.2rem;
+    margin-bottom: 0.5em;
+  }
+
+  .colophon-note {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 0.82rem;
+    color: var(--rule);
+    letter-spacing: 0;
+    margin-top: 0.8em;
+  }
+
+  /* ── Print styles ── */
+  @media print {
+    body { background: white; }
+    .manuscript { max-width: none; padding: 1.5cm 2.5cm; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 720px) {
+    html { font-size: 15px; }
+    .manuscript { padding: 1.5em 1.2em 3em; }
+    .title { font-size: 2.2rem; }
+    .chapter-heading { font-size: 1.5rem; }
+    .metadata { flex-wrap: wrap; gap: 0.8em; }
+    .meta-item { flex-basis: 45%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="manuscript">
+
+  <!-- Top ornament -->
+  <div class="top-ornament">
+    <div class="medallion">&#10040;</div>
+    <div class="vine-line">
+      <span class="vine-segment"></span>
+      <span class="vine-gem">&#9670;</span>
+      <span class="vine-segment"></span>
+      <span class="vine-leaf">&#10086;</span>
+      <span class="vine-segment"></span>
+      <span class="vine-gem">&#9670;</span>
+      <span class="vine-segment"></span>
+    </div>
+  </div>
+
+  <!-- Incipit -->
+  <div class="incipit">&#10087; Incipit Liber &#10087;</div>
+
+  <!-- Title -->
+  <h1 class="title">{{ title }}</h1>
+
+  <!-- Subtitle -->
+  <div class="subtitle">
+    {% for line in subtitle.split('\n') %}
+      {{ line }}{% if not loop.last %}<br>{% endif %}
+    {% endfor %}
+  </div>
+
+  <!-- Rule -->
+  <hr class="rule rule-thick">
+
+  <!-- Metadata -->
+  <div class="metadata">
+    <div class="meta-item">
+      <div class="meta-label">Sphere</div>
+      <div class="meta-value">{{ metadata.sphere }}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Locus</div>
+      <div class="meta-value">{{ metadata.locus }}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Aim</div>
+      <div class="meta-value">{{ metadata.aim }}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Status</div>
+      <div class="meta-value">{{ metadata.status }}</div>
+    </div>
+  </div>
+
+  <!-- Chapters -->
+  {% for chapter in chapters %}
+  <div class="chapter">
+    <hr class="rule">
+
+    <div class="chapter-number" style="margin-top: 1.5em;">
+      <span class="florette">&#10087;</span>
+      &ensp;Caput {{ chapter.number }} &middot; {{ chapter.subtitle }}&ensp;
+      <span class="florette">&#10087;</span>
+    </div>
+
+    <h2 class="chapter-heading">{{ chapter.heading }}</h2>
+
+    <div class="chapter-body">
+      {% for para in chapter.body.split('\n\n') %}
+        <p>{{ para }}</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- Colophon -->
+  <div class="colophon">
+    <hr class="rule" style="margin-bottom: 2em;">
+    <div class="colophon-ornament">&#10040;</div>
+    &#10087; Finis &#10087;
+    <div class="colophon-note">
+      Transcribed by an Artificial Scribe in the Year of Our Lord {{ year | default('MMXXVI') }}
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
