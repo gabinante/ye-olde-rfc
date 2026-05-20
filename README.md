@@ -4,7 +4,7 @@ Transform dry technical specs into medieval manuscripts — complete with blackl
 
 Feed it an RFC, get back a scroll.
 
-![example output](https://github.com/user-attachments/assets/placeholder-screenshot.png)
+![example output](example.png)
 
 ## How it works
 
