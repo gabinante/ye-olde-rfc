@@ -1,8 +1,8 @@
 # Ye Olde RFC
 
-Transform dry technical specs into medieval manuscripts — complete with blackletter fonts, illuminated drop caps, and mock-archaic English prose.
+**Request for Counsel** — transform dry technical specs into medieval manuscripts, complete with blackletter fonts, illuminated drop caps, and mock-archaic English prose.
 
-Feed it an RFC, get back a scroll.
+Feed it a Request for Counsel, get back a scroll.
 
 ![example output](example.png)
 

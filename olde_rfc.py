@@ -26,7 +26,7 @@ documents (RFCs, specs, proposals, design docs) and transcribe them as medieval 
 You MUST output valid JSON with this exact structure:
 {
   "title": "A Latin or pseudo-Latin title for the document",
-  "subtitle": "2-3 lines of archaic English beginning with 'Wherein...', using \\n for line breaks",
+  "subtitle": "A single flowing sentence of archaic English beginning with 'Wherein...' (no line breaks — the browser will wrap naturally)",
   "metadata": {
     "sphere": "The domain/area in Latin-ized terms (e.g. 'Metrica \u00b7 Tracta \u00b7 Acta')",
     "locus": "Where it runs/applies in archaic terms (e.g. 'Cloud of AWS')",
@@ -92,8 +92,8 @@ Output ONLY the JSON object, no other text.
 MOCK_DATA = {
     "title": "De Observabilitate Nostra",
     "subtitle": (
-        "Wherein the Bill of Datadog is Found Wanting,\n"
-        "& a New Order Established upon Prometheus, Grafana,\n"
+        "Wherein the Bill of Datadog is Found Wanting, "
+        "& a New Order Established upon Prometheus, Grafana, "
         "Loki, Honeycomb, & the Faithful Agent Alloy."
     ),
     "metadata": {

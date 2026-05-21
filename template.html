@@ -328,16 +328,14 @@
   </div>
 
   <!-- Incipit -->
-  <div class="incipit">&#10087; Incipit Liber &#10087;</div>
+  <div class="incipit">&#10087; Incipit Consilium &#10087;</div>
 
   <!-- Title -->
   <h1 class="title">{{ title }}</h1>
 
   <!-- Subtitle -->
   <div class="subtitle">
-    {% for line in subtitle.split('\n') %}
-      {{ line }}{% if not loop.last %}<br>{% endif %}
-    {% endfor %}
+    {{ subtitle }}
   </div>
 
   <!-- Rule -->
