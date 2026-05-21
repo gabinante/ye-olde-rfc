@@ -4,8 +4,6 @@
 
 Feed it a Request for Counsel, get back a scroll.
 
-![example output](example.png)
-
 ![percona xtradb example](examples/percona_xtradb.png)
 
 ## How it works
