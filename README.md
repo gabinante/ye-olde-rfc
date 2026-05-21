@@ -6,6 +6,8 @@ Feed it a Request for Counsel, get back a scroll.
 
 ![example output](example.png)
 
+![percona xtradb example](examples/percona_xtradb.png)
+
 ## How it works
 
 1. **Claude** rewrites your technical document in mock-medieval English with Latin titles, personified services ("Prometheus the Steward of Metrics"), and archaic metaphors — while preserving every technical detail

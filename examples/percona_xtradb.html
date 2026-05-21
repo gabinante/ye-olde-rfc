@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Propositio de Mutanda Basi Datorum: A Percona XtraDB Cluster Pro Replicatione Multi-Magistrali</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=EB+Garamond:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parchment:      #f4e4c1;
+    --parchment-lite:  #f8edd3;
+    --parchment-dark:  #e0d0a8;
+    --ink:             #2d1810;
+    --ink-light:       #4a3728;
+    --red:             #8b1a1a;
+    --red-dark:        #5c1212;
+    --gold:            #c8a951;
+    --gold-dark:       #8b6914;
+    --green:           #2d5a27;
+    --rule:            #b8a080;
+    --rule-light:      #d4c4a0;
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    font-size: 17px;
+  }
+
+  body {
+    font-family: 'EB Garamond', 'Georgia', 'Times New Roman', serif;
+    color: var(--ink);
+    background-color: var(--parchment);
+    background-image:
+      /* faint horizontal fibre lines */
+      repeating-linear-gradient(
+        0deg,
+        transparent, transparent 3px,
+        rgba(139,110,78,0.025) 3px, rgba(139,110,78,0.025) 4px
+      ),
+      /* faint vertical fibre lines */
+      repeating-linear-gradient(
+        90deg,
+        transparent, transparent 5px,
+        rgba(139,110,78,0.015) 5px, rgba(139,110,78,0.015) 6px
+      ),
+      /* vignette */
+      radial-gradient(ellipse at center, transparent 50%, rgba(139,110,78,0.14) 100%),
+      /* base gradient */
+      linear-gradient(180deg, #f0deb8 0%, var(--parchment) 15%, var(--parchment) 85%, var(--parchment-dark) 100%);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Page container ── */
+  .manuscript {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 2.5em 2em 4em;
+  }
+
+  /* ── Top ornament ── */
+  .top-ornament {
+    text-align: center;
+    margin-bottom: 1em;
+    padding-top: 1em;
+  }
+
+  .medallion {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2.5px solid var(--rule);
+    background: radial-gradient(circle, var(--parchment-lite), var(--parchment-dark));
+    font-size: 1.4rem;
+    color: var(--gold-dark);
+    box-shadow: 0 0 0 1px var(--rule-light), 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 0.3em;
+  }
+
+  .vine-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    color: var(--rule);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    margin-top: 0.2em;
+  }
+
+  .vine-segment {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--rule) 20%, var(--rule) 80%, transparent);
+    max-width: 160px;
+  }
+
+  .vine-leaf {
+    color: var(--green);
+    font-size: 1.05rem;
+    margin: 0 0.6em;
+  }
+
+  .vine-gem {
+    color: var(--green);
+    font-size: 0.65rem;
+    margin: 0 0.4em;
+    vertical-align: 1px;
+  }
+
+  /* ── Incipit banner ── */
+  .incipit {
+    text-align: center;
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 0.85rem;
+    color: var(--red);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    margin: 1.5em 0 0.6em;
+  }
+
+  /* ── Title ── */
+  .title {
+    text-align: center;
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 2.8rem;
+    font-weight: normal;
+    color: var(--ink);
+    line-height: 1.2;
+    margin: 0.15em 0 0.5em;
+  }
+
+  /* ── Subtitle ── */
+  .subtitle {
+    text-align: center;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--ink-light);
+    line-height: 1.55;
+    margin: 0 0 1.8em;
+    padding: 0 0.5em;
+  }
+
+  .subtitle .amp {
+    font-style: italic;
+    font-size: 1.15em;
+  }
+
+  /* ── Ornamental rules ── */
+  .rule {
+    border: none;
+    margin: 0 0;
+    height: 0;
+    position: relative;
+  }
+
+  .rule::before,
+  .rule::after {
+    content: '';
+    display: block;
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--rule) 15%, var(--rule) 85%, transparent);
+  }
+
+  .rule::before { margin-bottom: 2.5px; }
+  .rule::after  { margin-top: 0; }
+
+  .rule-thick::before,
+  .rule-thick::after {
+    height: 1.5px;
+  }
+
+  .rule-thick::before { margin-bottom: 3px; }
+
+  /* ── Metadata table ── */
+  .metadata {
+    display: flex;
+    justify-content: space-between;
+    margin: 1.8em 0;
+    padding: 0 0.5em;
+    gap: 1em;
+  }
+
+  .meta-item {
+    text-align: center;
+    flex: 1;
+  }
+
+  .meta-label {
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 0.78rem;
+    color: var(--red);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.35em;
+  }
+
+  .meta-value {
+    font-size: 0.9rem;
+    color: var(--ink-light);
+    line-height: 1.4;
+  }
+
+  /* ── Chapter ── */
+  .chapter {
+    margin-top: 3em;
+  }
+
+  .chapter-number {
+    text-align: center;
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 0.72rem;
+    color: var(--red);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 0.5em;
+  }
+
+  .chapter-number .florette {
+    font-size: 0.85em;
+    vertical-align: 0.5px;
+  }
+
+  .chapter-heading {
+    text-align: center;
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 1.9rem;
+    font-weight: normal;
+    color: var(--ink);
+    line-height: 1.25;
+    margin-bottom: 0.8em;
+  }
+
+  /* ── Body text ── */
+  .chapter-body p {
+    text-align: justify;
+    margin-bottom: 0.9em;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
+
+  .chapter-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* ── Drop cap ── */
+  .chapter-body p:first-of-type::first-letter {
+    float: left;
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 4.2em;
+    line-height: 0.78;
+    padding: 0.06em 0.12em 0.04em 0.08em;
+    margin-right: 0.06em;
+    margin-top: 0.04em;
+    background: var(--red-dark);
+    color: var(--gold);
+    border: 1.5px solid var(--gold-dark);
+    box-shadow:
+      inset 0 0 12px rgba(0,0,0,0.25),
+      0 2px 4px rgba(0,0,0,0.15);
+  }
+
+  /* ── Colophon ── */
+  .colophon {
+    text-align: center;
+    margin-top: 4em;
+    padding-top: 1.5em;
+    font-family: 'UnifrakturMaguntia', cursive;
+    font-size: 0.85rem;
+    color: var(--red);
+    letter-spacing: 0.2em;
+  }
+
+  .colophon-ornament {
+    color: var(--rule);
+    font-size: 1.2rem;
+    margin-bottom: 0.5em;
+  }
+
+  .colophon-note {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 0.82rem;
+    color: var(--rule);
+    letter-spacing: 0;
+    margin-top: 0.8em;
+  }
+
+  /* ── Print styles ── */
+  @media print {
+    body { background: white; }
+    .manuscript { max-width: none; padding: 1.5cm 2.5cm; }
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 720px) {
+    html { font-size: 15px; }
+    .manuscript { padding: 1.5em 1.2em 3em; }
+    .title { font-size: 2.2rem; }
+    .chapter-heading { font-size: 1.5rem; }
+    .metadata { flex-wrap: wrap; gap: 0.8em; }
+    .meta-item { flex-basis: 45%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="manuscript">
+
+  <!-- Top ornament -->
+  <div class="top-ornament">
+    <div class="medallion">&#10040;</div>
+    <div class="vine-line">
+      <span class="vine-segment"></span>
+      <span class="vine-gem">&#9670;</span>
+      <span class="vine-segment"></span>
+      <span class="vine-leaf">&#10086;</span>
+      <span class="vine-segment"></span>
+      <span class="vine-gem">&#9670;</span>
+      <span class="vine-segment"></span>
+    </div>
+  </div>
+
+  <!-- Incipit -->
+  <div class="incipit">&#10087; Incipit Consilium &#10087;</div>
+
+  <!-- Title -->
+  <h1 class="title">Propositio de Mutanda Basi Datorum: A Percona XtraDB Cluster Pro Replicatione Multi-Magistrali</h1>
+
+  <!-- Subtitle -->
+  <div class="subtitle">
+    Wherein the ancient and creaking dominion of PostgreSQL the Elder is found wanting in its replication of scrolls, and the Brotherhood of the Database Platform doth propose its replacement by the threefold fellowship of Percona XtraDB Cluster, that all three towers of the realm may accept the quill of inscription simultaneously, and no scribe shall ever again be named the Sole Master.
+  </div>
+
+  <!-- Rule -->
+  <hr class="rule rule-thick">
+
+  <!-- Metadata -->
+  <div class="metadata">
+    <div class="meta-item">
+      <div class="meta-label">Sphere</div>
+      <div class="meta-value">Basis Datorum · Replicatio · Architectura</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Locus</div>
+      <div class="meta-value">Turres AWS in Regionibus us-east-1a, 1b, et 1c</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Aim</div>
+      <div class="meta-value">Stabilitas · Concordia · Latentiae Minimae</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Status</div>
+      <div class="meta-value">Proposito</div>
+    </div>
+  </div>
+
+  <!-- Chapters -->
+  
+  <div class="chapter">
+    <hr class="rule">
+
+    <div class="chapter-number" style="margin-top: 1.5em;">
+      <span class="florette">&#10087;</span>
+      &ensp;Caput Primum &middot; Of the Summary and the Central Plea&ensp;
+      <span class="florette">&#10087;</span>
+    </div>
+
+    <h2 class="chapter-heading">Summa Brevis</h2>
+
+    <div class="chapter-body">
+      
+        <p>Hearken well, ye denizens of the realm and keepers of the great vaults, for the Brotherhood of the Database Platform doth hereby set forth this solemn Propositio, that our current arrangement with PostgreSQL the Elder — that ancient and venerable scrivener of version fifteen, seated upon his r6g.4xlarge throne in the manner of a primary — hath grown long in tooth and short in patience.</p>
+      
+        <p>PostgreSQL the Elder hath served faithfully these three years past, yet he doth suffer from a most grievous affliction: he alone accepteth all inscriptions, whilst his two lesser replicas upon their r6g.2xlarge perches do naught but copy his scrolls with a lag of some two to ten seconds during times of great tumult, such as the Flash Sales and the Batch Processing windows of doom. Furthermore, when PostgreSQL the Elder falleth ill, the ceremony of his replacement doth require no fewer than four minutes and seven-and-thirty seconds of darkness and gnashing of teeth, ere the DNS heralds complete their proclamations and the townsfolk may write again.</p>
+      
+        <p>In his stead, we propose the summoning of Percona XtraDB Cluster 8.0 — a three-headed fellowship of equal masters, bound together by the mystical compact of Galera synchronous replication — wherein every committed inscription is certified across all three towers before acknowledgment is granted, all replication lag is cast into the outer darkness, and failover doth proceed as naturally as the dawn, without the intervention of mortal DBA hands.</p>
+      
+    </div>
+  </div>
+  
+  <div class="chapter">
+    <hr class="rule">
+
+    <div class="chapter-number" style="margin-top: 1.5em;">
+      <span class="florette">&#10087;</span>
+      &ensp;Caput Secundum &middot; Of Past Things and the Architecture That Was&ensp;
+      <span class="florette">&#10087;</span>
+    </div>
+
+    <h2 class="chapter-heading">De Rebus Praeteritis</h2>
+
+    <div class="chapter-body">
+      
+        <p>Let us now recount, for the edification of the unlearned, the arrangement that hath prevailed in our database tier these three years past, that its virtues and its manifold insufficiencies may alike be made plain.</p>
+      
+        <p>PostgreSQL the Elder, primary scrivener of all inscriptions, doth sit enthroned upon a single r6g.4xlarge stronghold in the manner of a sole monarch, receiving all write traffic unto himself whilst two lesser replicas — likewise monks of the PostgreSQL order, yet seated upon the humbler r6g.2xlarge perches — do receive his words through the mechanism known as streaming replication with async commit. This is to say, the replicas receive his writings somewhat after the fact, as a town crier who hath first stopped to take his supper.</p>
+      
+        <p>PgBouncer, that faithful but modest Keeper of the Connection Pool, doth regulate the flow of petitioners presenting themselves at the gate. And should PostgreSQL the Elder fall to calamity, the ceremony of failover doth require manual intervention of the DBA guild, the incantation of pg_promote, the dispatch of DNS heralds to update the realm's directories, the draining of PgBouncer's connection pool, and the verification of sequences and replication slots — a ceremony of such complexity that our last unplanned failover consumed four minutes and seven-and-thirty seconds, during which the townsfolk could inscribe nothing whatsoever and were sore aggrieved.</p>
+      
+        <p>Furthermore, the management of replication slots, WAL retention, the logical decoding slots required for Change Data Capture, and the detection of replica drift doth consume considerable DBA time — some twenty hours each month given over to incident response alone — time that might more profitably be spent in learned contemplation or the writing of further proposals such as this one.</p>
+      
+    </div>
+  </div>
+  
+  <div class="chapter">
+    <hr class="rule">
+
+    <div class="chapter-number" style="margin-top: 1.5em;">
+      <span class="florette">&#10087;</span>
+      &ensp;Caput Tertium &middot; Of Present Evils and the Specific Afflictions&ensp;
+      <span class="florette">&#10087;</span>
+    </div>
+
+    <h2 class="chapter-heading">De Malis Praesentibus</h2>
+
+    <div class="chapter-body">
+      
+        <p>The afflictions of our current order are fourfold, and each doth warrant enumeration with appropriate gravity.</p>
+      
+        <p>First, the Write Bottleneck. All inscriptions must pass through PostgreSQL the Elder's single quill. During the Flash Sales — those frenzied carnivals when all the townsfolk attempt to write at once — and during the Batch Processing windows when the clerks inscribe ten thousand records without pause, write latency doth spike to two hundred, even four hundred milliseconds, as though the Elder scrivener had developed a palsy in his writing hand.</p>
+      
+        <p>Second, the Replication Lag. The async streaming replication doth fall behind by two to ten full seconds during peak load, causing the lesser replica-monks to serve stale readings to the townsfolk — as though a patron of the scriptorium were handed a manuscript copied yesterday rather than the one finished moments ago — which hath caused no small number of application errors and much wailing.</p>
+      
+        <p>Third, the Failover Complexity. As already rehearsed in our previous chapter, the ceremony of promoting a replica to primary status doth require manual intervention, DNS proclamation, connection pool draining, and sequence verification. The entire ritual consumes — as documented in the annals of our last unplanned calamity — four minutes, seven-and-thirty seconds. During this dark interval, no write may proceed, and the SLA credits doth flow like a river in flood, at approximately eight thousand gold pieces per such incident.</p>
+      
+        <p>Fourth, the Operational Burden. The DBA guild doth labor some twenty hours monthly managing the arcane intricacies of replication slots, WAL retention, logical decoding for CDC purposes, and the detection of replica drift — twenty hours of mortal time that might be halved or better under a more enlightened dispensation.</p>
+      
+    </div>
+  </div>
+  
+  <div class="chapter">
+    <hr class="rule">
+
+    <div class="chapter-number" style="margin-top: 1.5em;">
+      <span class="florette">&#10087;</span>
+      &ensp;Caput Quartum &middot; Of the Remedy Proposed and Its Architecture&ensp;
+      <span class="florette">&#10087;</span>
+    </div>
+
+    <h2 class="chapter-heading">Remedium Propositum et De Architectura</h2>
+
+    <div class="chapter-body">
+      
+        <p>We do hereby propose the deployment of Percona XtraDB Cluster 8.0, a fellowship of three equal towers bound by Galera synchronous replication — that celebrated compact of writeset certification wherein every transaction is examined and ratified by all nodes before it may be committed, and thus every node doth always speak with equal authority and perfect freshness.</p>
+      
+        <p>The three towers shall be erected thus: the First Node in the keep of us-east-1a, seated upon an r6g.4xlarge stronghold, accepting both writes and reads; the Second Node in the keep of us-east-1b, likewise r6g.4xlarge, accepting both writes and reads; and the Third Node in the keep of us-east-1c, again r6g.4xlarge, accepting both writes and reads simultaneously. All three are masters. None is lesser. This is the central mystery and the great virtue of the proposed fellowship.</p>
+      
+        <p>The Galera compact doth operate through writeset certification: every transaction, before it may be committed, must receive the certification of all nodes, ensuring that reads from any node in the fellowship are always consistent. The tradeoff is a modest additional latency of two to five milliseconds for each certification, yet this cost is well borne, for it eliminateth the far more grievous write bottleneck of the single-scrivener arrangement.</p>
+      
+        <p>Before the three towers shall stand ProxySQL, whom we name the Gate Keeper, a wise and vigilant sentinel who doth perform automatic read-write splitting, connection pooling in replacement of PgBouncer, health-check-based routing that removeth troubled nodes from rotation during the SST and IST ceremonies of node provisioning, query caching for the hottest read paths through what we may term the scribe's quick-memory, and graceful handling of cluster partition events. ProxySQL the Gate Keeper shall himself be deployed in triplicate upon t3.large strongholds for resilience.</p>
+      
+        <p>For the vigil and watchkeeping of this fellowship, we shall summon Percona Monitoring and Management — PMM Server — that learned and cluster-aware chronicler of query analytics and alerting, which shall replace our current arrangement of pg_stat_statements and Datadog the Costly Observing Spirit, reducing our monitoring tithe by two hundred and eighty gold pieces monthly.</p>
+      
+        <p>That the Galera compact may function with right dispatch, the following mystical tunings shall be applied: gcache.size set to two gigabytes, wsrep_slave_threads to eight, and innodb_buffer_pool_size to forty-eight gigabytes — each a rune of performance carefully inscribed by the Brotherhood after study of the sacred Percona documentation.</p>
+      
+    </div>
+  </div>
+  
+  <div class="chapter">
+    <hr class="rule">
+
+    <div class="chapter-number" style="margin-top: 1.5em;">
+      <span class="florette">&#10087;</span>
+      &ensp;Caput Quintum &middot; Of the Labours of Translation and Application Change&ensp;
+      <span class="florette">&#10087;</span>
+    </div>
+
+    <h2 class="chapter-heading">De Translatione Schematum et Mutationibus</h2>
+
+    <div class="chapter-body">
+      
+        <p>The migration from the PostgreSQL order to the Percona fellowship is not without its labours of translation, for the two great scribal traditions speak dialects that are similar yet not identical, as Latin and Vulgar Latin — comprehensible to the trained ear, yet full of treacherous false cognates.</p>
+      
+        <p>The schema doth require translation in the following particulars: JSONB columns, those semi-structured scrolls of PostgreSQL, must become JSON columns with generated columns for indexed paths; Array types must be resolved into properly normalized junction tables or JSON arrays as befits the MySQL tradition; CTEs — those elegant WITH queries — are supported in MySQL 8.0 and are mostly compatible, praise be; Window functions are fully supported, a mercy; Sequences must become AUTO_INCREMENT columns with Galera's auto_increment_increment and offset runes set appropriately lest two masters inscribe the same number unto the same row; the LISTEN and NOTIFY mechanism — that peculiar oracle by which PostgreSQL doth whisper to listening processes — must be replaced with polling or message queue, and we note with relief that we are already moving toward SQS for this purpose; Partial indexes must become functional indexes or filtered covering indexes; and Custom types and enums must become ENUM columns or lookup tables in the MySQL manner.</p>
+      
+        <p>The application changes are more considerable still, requiring the labor of the guild across fourteen services: the Python libraries psycopg2 and asyncpg — trusted couriers of the PostgreSQL realm — must be replaced by PyMySQL and aiomysql; the SQLAlchemy dialect must be updated from postgresql to mysql+pymysql in each of the fourteen services; the Alembic revision history — that chronicle of all past schema ceremonies — must be migrated to the new dialect; and no fewer than forty-seven raw SQL queries that employ PostgreSQL-specific syntax, including ILIKE, string_agg, and generate_series, must be rewritten. Most notably, the upsert pattern ON CONFLICT DO UPDATE must be translated into the MySQL idiom INSERT ... ON DUPLICATE KEY UPDATE — a minor difference in incantation that will trip the unwary scribe if not attended to with great care. The Brotherhood hath identified twelve queries requiring significant rewriting and thirty-five requiring only minor syntax adjustments.</p>
+      
+    </div>
+  </div>
+  
+  <div class="chapter">
+    <hr class="rule">
+
+    <div class="chapter-number" style="margin-top: 1.5em;">
+      <span class="florette">&#10087;</span>
+      &ensp;Caput Sextum &middot; Of the Migration in Three Phases&ensp;
+      <span class="florette">&#10087;</span>
+    </div>
+
+    <h2 class="chapter-heading">De Migratione Tripartita</h2>
+
+    <div class="chapter-body">
+      
+        <p>The migration shall proceed in three ordered phases, as a military campaign doth proceed through reconnaissance, advance, and occupation, and each phase hath its appointed duration and its specific works.</p>
+      
+        <p>In the First Phase, occupying Weeks One through Three, the three-node PXC cluster shall be provisioned and proven in the staging realm. PMM Server shall be deployed for the vigil, and ProxySQL the Gate Keeper shall take his post. The tool known as pgloader shall perform the initial schema and data migration from PostgreSQL to PXC. The Galera tuning runes shall be inscribed — gcache.size, wsrep_slave_threads, innodb_buffer_pool_size — and the data integrity shall be validated by pt-table-checksum, that scrupulous clerk who doth compare every row and cry out upon any discrepancy.</p>
+      
+        <p>In the Second Phase, occupying Weeks Four through Seven, the application code shall be branched and the MySQL dialect introduced service by service across all fourteen guilds. Raw queries shall be migrated one service at a time, that any foul spirit of incompatibility may be isolated and exorcised before it spreadeth. A technique of dual-write shadow testing shall be employed: every write shall be sent simultaneously to both PostgreSQL and PXC, and the results compared, so that any divergence is discovered in safety rather than in the heat of production. The cluster shall be subjected to trial by ordeal — load testing using production traffic replay via pt-query-digest — that its mettle may be proven before the final cutover.</p>
+      
+        <p>In the Third Phase, the Cutover occurring in Week Eight, a final pgloader synchronization shall be performed, augmented by Change Data Capture via Debezium flowing PostgreSQL changes through Kafka into PXC, ensuring not a single inscription is lost in the transition. ProxySQL shall then be commanded to accept production traffic, and PostgreSQL the Elder shall be placed in honourable read-only retirement for a period of one week, standing as a warm safety net for rollback should any calamity be discovered. After the validation period, PostgreSQL shall be peacefully decommissioned, his scrolls archived, and his r6g instances returned to the royal cloud.</p>
+      
+    </div>
+  </div>
+  
+  <div class="chapter">
+    <hr class="rule">
+
+    <div class="chapter-number" style="margin-top: 1.5em;">
+      <span class="florette">&#10087;</span>
+      &ensp;Caput Septimum &middot; Of Dangers and Alternatives Rejected&ensp;
+      <span class="florette">&#10087;</span>
+    </div>
+
+    <h2 class="chapter-heading">De Periculis et De Viis Alteris</h2>
+
+    <div class="chapter-body">
+      
+        <p>Let it not be said that the Brotherhood hath proceeded without awareness of the dangers lurking in this enterprise, for there are several perils of note, each mitigated with due diligence.</p>
+      
+        <p>The first peril is Galera Flow Control: under heavy write load, a slower node may trigger flow control, throttling the entire cluster as a single slow monk in a scriptorium doth slow the whole copying line. This is mitigated by the uniform sizing of all three nodes at r6g.4xlarge and by careful gcache tuning. The second peril is DDL Limitations: Galera employeth Total Order Isolation for DDL, meaning a large ALTER TABLE doth lock writes cluster-wide as thoroughly as a royal proclamation silenceth a marketplace. This is mitigated by employing pt-online-schema-change for all schema migrations. The third peril is Multi-Master Conflicts: concurrent writes to the same row upon different nodes cause certification failures — deadlock errors not unlike two scribes attempting to overwrite the same line simultaneously. ProxySQL shall route related writes to the same node, and application-level retry logic shall be inscribed. The fourth peril is Network Partition: Galera requireth quorum of two of three nodes, and a network split isolating one node causeth that node to become non-primary — a designed behaviour preventing split-brain, yet one that shall surprise the unprepared application. ProxySQL health checks handle the routing. The fifth peril is Transaction Size Limits: very large transactions, such as bulk inserts exceeding one hundred thousand rows, may cause cluster instability, and so batch operations shall be chunked accordingly.</p>
+      
+        <p>Regarding alternatives that were considered and found wanting: PostgreSQL BDR, the Bi-Directional Replication, offereth true multi-master for the PostgreSQL tradition but requireth an EDB subscription at one hundred and eighty thousand gold pieces per annum — a tithe so magnificent as to be disqualifying. Citus the Distributed PostgreSQL doth scale reads admirably but requireth sharding schema design and provideth not true multi-master. CockroachDB, that distributed SQL creature of great ambition, suffereth significant query compatibility afflictions and imposeth three to five times greater per-query latency upon our OLTP workload, which is intolerable. Aurora PostgreSQL Multi-Master was briefly glimpsed in preview ere AWS itself deprecated it; Aurora MySQL Multi-Master existeth but is constrained to two writer nodes and beareth sundry restrictions unbecoming of a true fellowship. Finally, upgrading PostgreSQL with Patroni added as a steward doth provide automatic failover — an improvement — but solveth not the fundamental write scaling problem, for the architecture remaineth single-writer, and we should have spent much treasure for modest gain.</p>
+      
+    </div>
+  </div>
+  
+  <div class="chapter">
+    <hr class="rule">
+
+    <div class="chapter-number" style="margin-top: 1.5em;">
+      <span class="florette">&#10087;</span>
+      &ensp;Caput Octavum &middot; Of Tribute and the Final Summation&ensp;
+      <span class="florette">&#10087;</span>
+    </div>
+
+    <h2 class="chapter-heading">De Tributo et Peroratio</h2>
+
+    <div class="chapter-body">
+      
+        <p>Let us now lay bare the tribute required, that the keepers of the royal purse may see plainly what is asked and what is offered in return.</p>
+      
+        <p>In the current PostgreSQL arrangement, the monthly tithe standeth thus: the database nodes — one r6g.4xlarge Elder and two r6g.2xlarge lesser monks — exact four thousand eight hundred gold pieces monthly; the gp3 storage of two terabytes primary and two times two terabytes replica exacteth nine hundred and sixty gold pieces; PgBouncer upon two t3.medium perches exacteth one hundred and twenty gold pieces; and the Datadog spirit of observing exacteth four hundred gold pieces for its database monitoring ministry. This summeth to six thousand two hundred and eighty gold pieces monthly.</p>
+      
+        <p>Under the proposed Percona fellowship, the monthly tithe shall be: three r6g.4xlarge towers at seven thousand two hundred gold pieces; storage at three times two terabytes holding steady at nine hundred and sixty gold pieces unchanged; ProxySQL upon three t3.large perches at two hundred and forty gold pieces; and PMM Server upon a t3.xlarge stronghold at one hundred and twenty gold pieces — a saving against Datadog's impost. The new sum is eight thousand five hundred and twenty gold pieces monthly, representing an increase of two thousand two hundred and forty gold pieces.</p>
+      
+        <p>Yet this arithmetic of raw tribute telleth but half the tale, for the Brotherhood doth submit in evidence the following offsets. The elimination of the write bottleneck is estimated to prevent fifteen thousand gold pieces monthly in lost revenue during peak failures — that dark arithmetic of flash sales interrupted and carts abandoned. The reduction of DBA on-call burden from twenty hours monthly to an estimated eight hours saveth twelve hours at the guild rate of one hundred and fifty gold pieces per hour, which is one thousand eight hundred gold pieces recaptured for the treasury. And the achievement of zero-downtime failover preventeth the approximately eight thousand gold pieces per incident in SLA credits that our current four-minute-thirty-seven-second failover ceremony doth regularly extract from our coffers.</p>
+      
+        <p>Thus doth the Brotherhood of the Database Platform commend this Propositio to the wise judgment of the realm's decision-makers, beseeching their approval that the three towers of Percona XtraDB Cluster may be summoned, that the lonely reign of PostgreSQL the Elder may end in dignity rather than in another four-minute-thirty-seven-second catastrophe, and that the townsfolk may at last inscribe their records in peace, redundancy, and proper multi-master synchronicity. Fiat lux. Fiat cluster. Amen.</p>
+      
+    </div>
+  </div>
+  
+
+  <!-- Colophon -->
+  <div class="colophon">
+    <hr class="rule" style="margin-bottom: 2em;">
+    <div class="colophon-ornament">&#10040;</div>
+    &#10087; Finis &#10087;
+    <div class="colophon-note">
+      Transcribed by an Artificial Scribe in the Year of Our Lord MMXXVI
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
